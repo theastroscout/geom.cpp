@@ -7,7 +7,6 @@ Printer
 namespace surfy::geom {
 
 	namespace print {
-
 		/*
 
 		Point
@@ -47,7 +46,7 @@ namespace surfy::geom {
 
 			line(os, poly.outer.coords);
 
-			if(!poly.inner.coords.empty()){
+			if (!poly.inner.coords.empty()) {
 				os << ",";
 				line(os, poly.inner.coords);
 			}
@@ -91,6 +90,33 @@ namespace surfy::geom {
 	std::ostream& operator<<(std::ostream& os, const Polygon& poly) {
 		os << "POLYGON ";
 		print::polygon(os, poly);
+		return os;
+	}
+
+	/*
+
+	Shape
+
+	*/
+
+	std::ostream& operator<<(std::ostream& os, const Shape& shape) {
+		if (shape.type == "Point") {
+
+			os << "POINT (";
+			print::point(os, shape.geom.point);
+			os << ")";
+
+		} else if (shape.type == "Line") {
+
+			os << "LINESTRING (";
+			print::line(os, shape.geom.line.coords);
+			os << ")";
+
+		} else if (shape.type == "Polygon") {
+			os << "POLYGON ";
+			print::polygon(os, shape.geom.polygon);
+		}
+
 		return os;
 	}
 }

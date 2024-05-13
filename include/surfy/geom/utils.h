@@ -54,12 +54,14 @@ namespace surfy::geom::utils {
 		if (size == 0) {
 			size = coords.size();
 		}
-		
-		--size;
 
-		for (size_t i = 0; i < size; ++i) {
-			length += distance(coords[i], coords[i+1]);
+		if (size > 1) {
+			--size;
+			for (size_t i = 0; i < size; ++i) {
+				length += distance(coords[i], coords[i+1]);
+			}
 		}
+		
 		return length;
 	}
 
@@ -95,7 +97,7 @@ namespace surfy::geom::utils {
 
 	*/	
 
-	std::vector<Point> clipper(const std::vector<Point>& input, const std::vector<Point>& mask){
+	std::vector<Point> clip(const std::vector<Point>& input, const std::vector<Point>& mask) {
 
 		std::vector<Point> output = input;
 		
@@ -125,20 +127,6 @@ namespace surfy::geom::utils {
 		}
 
 		return output;
-	}
-
-	Polygon clip(const Polygon& poly, const Polygon& maskSrc) {
-		Polygon result;
-		std::vector<Point> mask = maskSrc.outer.coords;
-
-		result.outer.coords = clipper(poly.outer.coords, mask);
-		
-		// Mask inner polygon if exists
-		if(!poly.inner.coords.empty()){
-			result.inner.coords = clipper(poly.inner.coords, mask);
-		}
-
-		return result;
 	}
 }
 

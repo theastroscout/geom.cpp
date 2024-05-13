@@ -5,7 +5,7 @@
 
 ```cpp
 #include "/include/surfy/geom/geom.h"
-using sg = surfy::geom;
+namespace sg = surfy::geom;
 ```
 
 ## Shape
@@ -14,7 +14,7 @@ using sg = surfy::geom;
 // Structure
 class Shape {
 public:
-	std::string type; // Point, Line, MultiLine, Polygon, MultiPolygon, Error
+	std::string type; // Point, Line, MultiLine, Polygon, MultiPolygon, Dummy
 	std::string source; // Storing source string
 	
 	union Geometry {
@@ -55,6 +55,9 @@ double point.geom.point.y // 2
 // To String
 std::string wkt = point.wkt(); // "POINT (1 2)"
 
+// Print
+std::cout << point << std::endl; // "POINT (1 2)"
+
 ```
 
 ## Line
@@ -72,11 +75,11 @@ struct Line : public Geometry {
 sg::Shape line = sg::Shape("LINESTRING (1 1, 2 2)");
 std::string line.type // Line
 
-// Extract Point
+// Extract Points
 Point p1 = line.geom.line.coords[0];
 Point p2 = line.geom.line.coords[1];
 
-// Extract Coords
+// Get Coords
 double p1.x // 1
 double p2.y // 2
 
@@ -87,8 +90,13 @@ double line.length // Overall length
 unsigned int line.geom.line.size // Line size
 double line.geom.line.length // Line length
 
+bool line.geom.line.closed // 1 or 0
+
 // To String
 std::string wkt = line.wkt(); // "LINESTRING (1 1, 2 2)"
+
+// Print
+std::cout << line << std::endl; // "LINESTRING (1 1, 2 2)"
 
 ```
 
@@ -131,5 +139,31 @@ double poly.geom.inner.area // Inner Polygon area
 
 // To String
 std::string wkt = poly.wkt(); // "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))"
+
+
+// Print
+std::cout << poly << std::endl; // "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))"
+
+```
+
+## Clip
+Function takes a Shape and a Mask defined by four points representing a rectangular box. It clips the Shape according to the mask, ensuring that the Shape stays within the boundaries of the Mask. The function returns new Shape.
+
+```cpp
+
+// Counterclockwise Mask: TopLeft, BottomLeft, BottomRight, TopRight
+std::vector<sg::Point> mask = {{0, 0}, {0, 6}, {6, 6}, {6, 0}};
+
+// Clip Polygon
+sg::Shape poly = sg::Shape("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
+sg::Shape clippedPolygon = sg::clip(poly, mask);
+// Geometry in clippedPolygon.geom.polygon
+std::cout << clippedPolygon << std::end; // POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))
+
+// Clip Line
+sg::Shape line = sg::Shape("LINESTRING (0 0, 5 5, 11 10, 15 15)");
+sg::Shape clippedLine = sg::clip(line, mask);
+// Geometry in clippedLine.geom.line
+std::cout << clippedLine << std::end; // LINESTRING ((0 0, 5 5, 6 5.83333))
 
 ```
