@@ -10,6 +10,8 @@ using sg = surfy::geom;
 
 ## Shape
 ```cpp
+
+// Structure
 class Shape {
 public:
 	std::string type; // Point, Line, MultiLine, Polygon, MultiPolygon, Error
@@ -30,13 +32,63 @@ public:
 	}
 };
 
-sg::Shape point = sg::Shape("POINT (-0.035706 51.484804)");
+// Create
+sg::Shape point = sg::Shape("POINT (1. 1.)");
+
 ```
 
 ## Point
 ```cpp
-sg::Shape point = sg::Shape("POINT (-0.035706 51.484804)");
+
+// Structure
+struct Point : public Geometry {
+	double x;
+	double y;
+}
+
+// Create
+sg::Shape point = sg::Shape("POINT (1 2)");
 std::string point.type // Point
-double point.geom.point.x
-double point.geom.point.y
+double point.geom.point.x // 1
+double point.geom.point.y // 2
+
+```
+
+## Line
+```cpp
+
+// Structure
+struct Line : public Geometry {
+	std::vector<Point> coords;
+}
+
+// Create
+sg::Shape line = sg::Shape("LINESTRING (1 1, 2 2)");
+std::string line.type // Line
+double point.geom.line[0].x // 1
+double point.geom.line[1].y // 2
+
+```
+
+## Polygon
+```cpp
+
+// Structure
+struct Polygon : public Geometry {
+	std::vector<Point> outer;
+	std::vector<Point> inner;
+}
+
+/*
+
+Create
+Only Outer: "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))"
+Both Outer and Inner: "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))"
+*/
+
+sg::Shape line = sg::Shape("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
+std::string line.type // Polygon
+double point.geom.polygon.outer[1].y // 10
+double point.geom.polygon.inner[1].y // 5
+
 ```
