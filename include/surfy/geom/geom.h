@@ -19,8 +19,7 @@ namespace surfy::geom {
 	}
 
 	struct Point : public Geometry {
-		double x;
-		double y;
+		double x, y;
 	};
 
 	struct Line : public Geometry {
@@ -307,6 +306,8 @@ namespace surfy::geom {
 			refresh();
 		}
 
+		Shape simplify(const double& intolerance);
+
 		/*
 		Shape (const Polygon& poly) {
 			new (&geom.polygon) Polygon(poly);
@@ -325,5 +326,6 @@ namespace surfy::geom {
 #include "print.h"
 #include "utils.h"
 #include "clip.h"
+#include "simplify.h"
 
 #endif

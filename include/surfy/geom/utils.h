@@ -83,51 +83,6 @@ namespace surfy::geom::utils {
 		return area / 2;
 	}
 
-
-	/*
-
-
-	
-	Clipping Polygon by Mask
-	Sutherland-Hodgman algorithm
-
-	Mask Polygon should be sorted couterclockwise
-
-
-
-	*/	
-
-	std::vector<Point> clip(const std::vector<Point>& input, const std::vector<Point>& mask) {
-
-		std::vector<Point> output = input;
-		
-		for (int i = 0; i < mask.size(); ++i) {
-			std::vector<Point> input = output;
-			output.clear();
-			
-			const Point& a = mask[i];
-			const Point& b = mask[(i + 1) % mask.size()];
-
-			for (int j = 0; j < input.size(); ++j) {
-				const Point& p1 = input[j];
-				const Point& p2 = input[(j + 1) % input.size()];
-
-				float p1Side = (a.x - b.x) * (p1.y - a.y) - (a.y - b.y) * (p1.x - a.x);
-				float p2Side = (a.x - b.x) * (p2.y - a.y) - (a.y - b.y) * (p2.x - a.x);
-
-				if (p1Side >= 0)
-					output.push_back(p1);
-				if (p1Side * p2Side < 0) {
-					Point intersect;
-					intersect.x = (p1.x * p2Side - p2.x * p1Side) / (p2Side - p1Side);
-					intersect.y = (p1.y * p2Side - p2.y * p1Side) / (p2Side - p1Side);
-					output.push_back(intersect);
-				}
-			}
-		}
-
-		return output;
-	}
 }
 
 #endif

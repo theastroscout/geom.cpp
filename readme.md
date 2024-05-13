@@ -9,6 +9,8 @@ namespace sg = surfy::geom;
 ```
 
 ## Shape
+Shape is the main object of this library. It includes all basic functions and represents all geometry types such as Point, Line, MultiLine, Polygon and MultiPolygon that are defined during construction in Shape.geom.
+
 ```cpp
 
 // Structure
@@ -122,7 +124,7 @@ double poly.geom.polygon.outer.coords[1].y // 10.
 double poly.geom.polygon.inner.coords[1].y // 5.
 
 // Overall (Outer + Inner)
-// poly.size is an alias for poly.geom.polygon.size
+// poly.size is an alias for a poly.geom.polygon.size
 unsigned int poly.size // Overall size
 double poly.length // Overall length
 double poly.area // Overall area
@@ -147,7 +149,7 @@ std::cout << poly << std::endl; // "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0,
 ```
 
 ## Clip
-Function takes a Shape and a Mask defined by four points representing a rectangular box. It clips the Shape according to the mask, ensuring that the Shape stays within the boundaries of the Mask. The function returns new Shape.
+Clip takes Shape and Mask defined by four points representing a rectangular box, and clips Shape according to the mask, ensuring that Shape stays within the boundaries of the mask. Returns new Shape.
 
 ```cpp
 
@@ -165,5 +167,23 @@ sg::Shape line = sg::Shape("LINESTRING (0 0, 5 5, 11 10, 15 15)");
 sg::Shape clippedLine = sg::clip(line, mask);
 // Geometry in clippedLine.geom.line
 std::cout << clippedLine << std::end; // LINESTRING ((0 0, 5 5, 6 5.83333))
+
+```
+
+## Simplify
+Simplify uses the Douglas-Peucker simplification algorithm for reducing the number of points in a curve while preserving its general shape. It works by recursively dividing the curve into line segments and retaining only those points that are sufficiently far from the line segments.
+
+Tolerance in the context of the Douglas-Peucker algorithm refers to the maximum distance allowed between the original curve and the simplified approximation.
+
+Simplify returns new Shape.
+
+```cpp
+sg::Shape complexLine = sg::Shape("LINESTRING (0 0, 2 2, 5 5, 6 6, 7 7)");
+sg::Shape simpleLine = complexLine.simplify(1.);
+std::cout << simpleLine << std::endl; // "LINESTRING (0 0, 7 7)"
+
+sg::Shape complexPolygon = sg::Shape("POLYGON ()");
+sg::Shape simplePolygon = complexPolygon.simplify(1.);
+std::cout << simplePolygon << std::endl;
 
 ```
