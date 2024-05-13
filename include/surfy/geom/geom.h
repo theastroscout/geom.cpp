@@ -8,7 +8,7 @@
 namespace surfy::geom {
 
 	struct Geometry {
-		unsigned int vertices = 0;
+		unsigned int size = 0;
 		double length = 0;
 		double area = 0;
 		std::string wkt() const; // Return WKT string
@@ -24,6 +24,7 @@ namespace surfy::geom {
 	};
 
 	struct Line : public Geometry {
+		bool closed;
 		std::vector<Point> coords;
 	};
 
@@ -32,8 +33,8 @@ namespace surfy::geom {
 	};
 
 	struct Polygon : public Geometry {
-		std::vector<Point> inner;
-		std::vector<Point> outer;
+		Line inner;
+		Line outer;
 	};
 
 	struct MultiPolygon : public Geometry {
@@ -45,14 +46,10 @@ namespace surfy::geom {
 	};
 
 	namespace utils {};
-
-
-
-	void test();
 }
 
-// #include "types.h"
 #include "utils.h"
+#include "print.h"
 
 namespace surfy::geom {
 
@@ -60,7 +57,7 @@ namespace surfy::geom {
 	public:
 		std::string type;
 		std::string source;
-		unsigned int vertices = 0;
+		unsigned int size = 0;
 		double length = 0;
 		double area = 0;
 
@@ -89,14 +86,18 @@ namespace surfy::geom {
 			if (type == "Point") {
 
 				os << "POINT (";
-				utils::printPoint(os, geom.point);
+				print::point(os, geom.point);
 				os << ")";
 
 			} else if (type == "Line") {
 
 				os << "LINESTRING (";
-				utils::printCoords(os, geom.line.coords);
+				print::line(os, geom.line.coords);
 				os << ")";
+
+			} else if (type == "Polygon") {
+				os << "POLYGON ";
+				print::polygon(os, geom.polygon);
 			}
 
 			return os.str();
@@ -104,39 +105,61 @@ namespace surfy::geom {
 
 		/*
 
-		Update Vertices, Length, and Area
+		Update size, Length, and Area
 
 		*/
 
 		void refresh() {
-			vertices = 0;
-			length = .0;
+			size = 0;
+			length = 0;
 			area = .0;
 
 			if (type == "Point") {
-				vertices = 1;
+				size = 1;
 			} else if (type == "Line") {
 				size_t lineSize = geom.line.coords.size();
-				vertices = lineSize;
+				geom.line.size = lineSize;
+				geom.line.length = utils::length(geom.line.coords, lineSize);
+
+				// Update Shape
+				size = geom.line.size;
+				length = geom.line.length;
 
 			} else if (type == "Polygon") {
-				if(!geom.polygon.outer.empty()){
-					size_t outerSize = geom.polygon.outer.size();
-					geom.polygon.vertices += outerSize;
-					geom.polygon.length += utils::length(geom.polygon.outer, outerSize);
-					geom.polygon.area += utils::area(geom.polygon.outer, outerSize);
+
+				geom.polygon.size = 0;
+				geom.polygon.length = .0;
+				geom.polygon.area = .0;
+
+				if(!geom.polygon.outer.coords.empty()){
+					size_t outerSize = geom.polygon.outer.coords.size();
+					geom.polygon.outer.size = outerSize;
+					geom.polygon.outer.length = utils::length(geom.polygon.outer.coords, outerSize);
+					geom.polygon.outer.area = utils::area(geom.polygon.outer.coords, outerSize);
+
+
+
+					// Update Shape
+					geom.polygon.size += geom.polygon.outer.size;
+					geom.polygon.length += geom.polygon.outer.length;
+					geom.polygon.area += geom.polygon.outer.area;
 				}
 
-				if(!geom.polygon.inner.empty()){
-					size_t innerSize = geom.polygon.inner.size();
-					geom.polygon.vertices += innerSize;
-					geom.polygon.length += utils::length(geom.polygon.inner, innerSize);
-					geom.polygon.area += utils::area(geom.polygon.inner, innerSize);
+				if(!geom.polygon.inner.coords.empty()){
+					size_t innerSize = geom.polygon.inner.coords.size();
+					geom.polygon.inner.size = innerSize;
+					geom.polygon.inner.length = utils::length(geom.polygon.inner.coords, innerSize);
+					geom.polygon.inner.area = utils::area(geom.polygon.inner.coords, innerSize);
+
+					// Update Shape
+					geom.polygon.size += geom.polygon.inner.size;
+					geom.polygon.length += geom.polygon.inner.length;
+					geom.polygon.area += geom.polygon.inner.area;
 				}
 
-				vertices += geom.polygon.vertices;
-				length += geom.polygon.length;
-				area += geom.polygon.area;
+				size = geom.polygon.size;
+				length = geom.polygon.length;
+				area = geom.polygon.area;
 			}
 		}		
 
@@ -189,9 +212,9 @@ namespace surfy::geom {
 					std::vector<Point> coords = utils::parseCoordsString(polyStr);
 
 					if (pass == 1) {
-						geom.polygon.outer = coords;
+						geom.polygon.outer.coords = coords;
 					} else {
-						geom.polygon.inner = coords;
+						geom.polygon.inner.coords = coords;
 					}
 
 					pass++;
@@ -203,7 +226,7 @@ namespace surfy::geom {
 				type = "Error";
 			}
 
-			// Update Vertices, Length, and Area
+			// Update size, Length, and Area
 			refresh();
 		}
 

@@ -12,7 +12,7 @@ namespace surfy::geom::utils {
 	*/
 
 	double distance(const Point& p1, const Point& p2) {
-		return std::sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+		return std::sqrt(std::fabs((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)));
 	}
 
 	/*
@@ -45,28 +45,6 @@ namespace surfy::geom::utils {
 
 	/*
 
-	Print Coordinates
-
-	*/
-
-	void printPoint(std::ostream& os, const Point& point) {
-		os << point.x << " " << point.y;
-	}
-
-	void printCoords(std::ostream& os, const std::vector<Point>& coords) {
-		os << "(";
-		size_t length = coords.size();
-		for (size_t i = 0; i < length; ++i) {
-			printPoint(os, coords[i]);
-			if (i != length - 1) {
-				os << ", ";
-			}
-		}
-		os << ")";
-	}
-
-	/*
-
 	Length
 
 	*/
@@ -76,6 +54,9 @@ namespace surfy::geom::utils {
 		if (size == 0) {
 			size = coords.size();
 		}
+		
+		--size;
+
 		for (size_t i = 0; i < size; ++i) {
 			length += distance(coords[i], coords[i+1]);
 		}
@@ -89,16 +70,75 @@ namespace surfy::geom::utils {
 	*/
 
 	float area(const std::vector<Point>& coords, size_t size = 0) {
-		double area = .0;
+		float area = .0;
 		if (size == 0) {
 			size = coords.size();
 		}
 		for (int i = 0; i < size; ++i) {
 			int j = (i + 1) % size;
-			// area += coords[i].x * coords[j].y - coords[j].x * coords[i].y;
-			area += coords[i].x * coords[j].y - coords[j].x * coords[i].y;
+			area += std::fabs(coords[i].x * coords[j].y - coords[j].x * coords[i].y);
 		}
 		return area / 2;
+	}
+
+
+	/*
+
+
+	
+	Clipping Polygon by Mask
+	Sutherland-Hodgman algorithm
+
+	Mask Polygon should be sorted couterclockwise
+
+
+
+	*/	
+
+	std::vector<Point> clipper(const std::vector<Point>& input, const std::vector<Point>& mask){
+
+		std::vector<Point> output = input;
+		
+		for (int i = 0; i < mask.size(); ++i) {
+			std::vector<Point> input = output;
+			output.clear();
+			
+			const Point& a = mask[i];
+			const Point& b = mask[(i + 1) % mask.size()];
+
+			for (int j = 0; j < input.size(); ++j) {
+				const Point& p1 = input[j];
+				const Point& p2 = input[(j + 1) % input.size()];
+
+				float p1Side = (a.x - b.x) * (p1.y - a.y) - (a.y - b.y) * (p1.x - a.x);
+				float p2Side = (a.x - b.x) * (p2.y - a.y) - (a.y - b.y) * (p2.x - a.x);
+
+				if (p1Side >= 0)
+					output.push_back(p1);
+				if (p1Side * p2Side < 0) {
+					Point intersect;
+					intersect.x = (p1.x * p2Side - p2.x * p1Side) / (p2Side - p1Side);
+					intersect.y = (p1.y * p2Side - p2.y * p1Side) / (p2Side - p1Side);
+					output.push_back(intersect);
+				}
+			}
+		}
+
+		return output;
+	}
+
+	Polygon clip(const Polygon& poly, const Polygon& maskSrc) {
+		Polygon result;
+		std::vector<Point> mask = maskSrc.outer.coords;
+
+		result.outer.coords = clipper(poly.outer.coords, mask);
+		
+		// Mask inner polygon if exists
+		if(!poly.inner.coords.empty()){
+			result.inner.coords = clipper(poly.inner.coords, mask);
+		}
+
+		return result;
 	}
 }
 
