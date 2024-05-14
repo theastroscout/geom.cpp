@@ -10,37 +10,6 @@ namespace surfy::geom {
 
 		/*
 
-		Point inside Polygon
-
-		*/
-
-		bool inside(const Point& point, const std::vector<Point>& polygon) {
-			for (const Point& vertex : polygon) {
-		        if (vertex.x == point.x && vertex.y == point.y) {
-		            return true;
-		        }
-		    }
-
-			bool inside = false;
-
-		    for (int i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++) {
-		        bool isAboveI = (polygon[i].y > point.y);
-		        bool isAboveJ = (polygon[j].y > point.y);
-		        bool yIntersect = (isAboveI != isAboveJ);
-		        
-		        double slope = (polygon[j].x - polygon[i].x) / (polygon[j].y - polygon[i].y);
-		        double intersectX = slope * (point.y - polygon[i].y) + polygon[i].x;
-		        bool xIntersect = (point.x <= intersectX); // Include equality
-
-		        if (yIntersect && xIntersect) {
-		            inside = !inside;
-		        }
-		    }
-		    return inside;
-		}
-
-		/*
-
 		Finds Intersection of two Segments
 
 		*/
@@ -79,7 +48,7 @@ namespace surfy::geom {
 			size_t maskSize = mask.size();
 			for (int i = 0, l = line.size(); i < l; ++i) {
 				Point p = line[i];
-				bool isInside = inside(p, mask);
+				bool isInside = utils::inside(p, mask);
 
 				if (isInside) {
 					clipped.push_back(p);
@@ -162,20 +131,65 @@ namespace surfy::geom {
 
 		std::vector<Point> mask = maskSrc.geom.polygon.outer.coords;
 
-		if (shape.type == "Line") {
+		if (shape.type == "Point") {
+
+			result.type = "Point";
+			new (&result.geom.point) Point(); // Initialise Geometry::Point
+
+			if (utils::inside(shape.geom.point, mask)) {
+				result.geom.point.x = shape.geom.point.x;
+				result.geom.point.y = shape.geom.point.y;
+			}
+
+		} else if (shape.type == "Line") {
+
 			result.type = "Line";
 			new (&result.geom.line) Line(); // Initialise Geometry::Line
 			result.geom.line.coords = clippers::line(shape.geom.line.coords, mask);
 
+		} else if (shape.type == "MultiLine") {
+			
+			result.type = "MultiLine";
+			new (&result.geom.multiLine) MultiLine(); // Initialise Geometry::MultiLine
+
+			for (int i = 0; i < shape.size; ++i) {
+				Line line;
+				line.coords = clippers::line(shape.geom.multiLine.items[i].coords, mask);
+				result.geom.multiLine.items.push_back(line);
+			}
+
 		} else if (shape.type == "Polygon") {
+
 			result.type = "Polygon";
 			new (&result.geom.polygon) Polygon(); // Initialise Geometry::Polygon
 
-			result.geom.polygon.outer.coords = clippers::polygon(shape.geom.polygon.outer.coords, mask);
+			if (!shape.geom.polygon.outer.empty) {
+				result.geom.polygon.outer.coords = clippers::polygon(shape.geom.polygon.outer.coords, mask);
+			}
 
-			if(!shape.geom.polygon.inner.coords.empty()){
+			if (!shape.geom.polygon.inner.empty) {
 				result.geom.polygon.inner.coords = clippers::polygon(shape.geom.polygon.inner.coords, mask);
 			}
+		} else if (shape.type == "MultiPolygon") {
+			
+			result.type = "MultiPolygon";
+			new (&result.geom.multiPolygon) MultiPolygon(); // Initialise Geometry::MultiPolygon
+
+			for (int i = 0; i < shape.size; ++i) {
+				const Polygon& srcPoly = shape.geom.multiPolygon.items[i];
+				Polygon poly;
+				
+				if (!srcPoly.outer.empty) {
+					poly.outer.coords = clippers::polygon(srcPoly.outer.coords, mask);
+				}
+				
+				if (!srcPoly.inner.empty) {
+					poly.inner.coords = clippers::polygon(srcPoly.inner.coords, mask);
+				}
+
+				result.geom.multiPolygon.items.push_back(poly);
+			}
+
 		}
 
 		result.refresh();

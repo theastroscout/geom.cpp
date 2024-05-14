@@ -1,5 +1,5 @@
 # Surfy.Geom C++
-
+Demo test/main.cpp
 
 ## Installation
 
@@ -44,8 +44,7 @@ sg::Shape point = sg::Shape("POINT (1. 1.)");
 
 // Structure
 struct Point : public Geometry {
-	double x;
-	double y;
+	double x, y;
 }
 
 // Create
@@ -75,7 +74,22 @@ struct Line : public Geometry {
 
 // Create
 sg::Shape line = sg::Shape("LINESTRING (1 1, 2 2)");
+
 std::string line.type // Line
+bool line.empty
+unsigned int line.vertices // Number of vertices
+double line.length // Length
+
+// Line params, which are the same since there is only one Line
+unsigned int line.geom.line.vertices // Number of Line's vertices
+double line.geom.line.length // Line length
+
+bool line.geom.line.closed
+// To String
+std::string wkt = line.wkt(); // "LINESTRING (1 1, 2 2)"
+
+// Print
+std::cout << line << std::endl; // "LINESTRING (1 1, 2 2)"
 
 // Extract Points
 Point p1 = line.geom.line.coords[0];
@@ -84,21 +98,6 @@ Point p2 = line.geom.line.coords[1];
 // Get Coords
 double p1.x // 1
 double p2.y // 2
-
-unsigned int line.size // Overall size
-double line.length // Overall length
-
-// Line params, which are the same since there is only one Line
-unsigned int line.geom.line.size // Line size
-double line.geom.line.length // Line length
-
-bool line.geom.line.closed // 1 or 0
-
-// To String
-std::string wkt = line.wkt(); // "LINESTRING (1 1, 2 2)"
-
-// Print
-std::cout << line << std::endl; // "LINESTRING (1 1, 2 2)"
 
 ```
 
@@ -120,31 +119,35 @@ Both Outer and Inner: "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 
 
 sg::Shape poly = sg::Shape("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
 std::string poly.type // Polygon
-double poly.geom.polygon.outer.coords[1].y // 10.
-double poly.geom.polygon.inner.coords[1].y // 5.
 
 // Overall (Outer + Inner)
 // poly.size is an alias for a poly.geom.polygon.size
-unsigned int poly.size // Overall size
+unsigned int poly.vertices // Overall number of vertices
 double poly.length // Overall length
 double poly.area // Overall area
 
 // Outer Polygon
-unsigned int poly.geom.outer.size // Inner Polygon size
-double poly.geom.outer.length // Inner Polygon length
-double poly.geom.outer.area // Inner Polygon area
+bool poly.geom.outer.empty
+bool poly.geom.outer.closed
+unsigned int poly.geom.outer.vertices // Outer Polygon vertices
+double poly.geom.outer.length // Outer Polygon length
+double poly.geom.outer.area // Outer Polygon area
 
 // Inner Polygon
-unsigned int poly.geom.inner.size // Inner Polygon size
+bool poly.geom.inner.empty
+bool poly.geom.inner.closed
+unsigned int poly.geom.inner.vertices // Inner Polygon vertices
 double poly.geom.inner.length // Inner Polygon length
 double poly.geom.inner.area // Inner Polygon area
 
 // To String
 std::string wkt = poly.wkt(); // "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))"
 
-
 // Print
 std::cout << poly << std::endl; // "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))"
+
+double poly.geom.polygon.outer.coords[1].y // 10.
+double poly.geom.polygon.inner.coords[1].y // 5.
 
 ```
 

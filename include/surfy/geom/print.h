@@ -75,8 +75,25 @@ namespace surfy::geom {
 	*/
 
 	std::ostream& operator<<(std::ostream& os, const Line& line) {
-		os << "LINESTRING (";
+		os << "LINESTRING ";
 		print::line(os, line.coords);
+		return os;
+	}
+
+	/*
+
+	MultiLine
+
+	*/
+
+	std::ostream& operator<<(std::ostream& os, const MultiLine& multiLine) {
+		os << "MULTILINESTRING (";
+		for (int i = 0; i < multiLine.size; ++i) {
+			print::line(os, multiLine.items[i].coords);
+			if (i != multiLine.size - 1) {
+				os << ",";
+			}
+		}
 		os << ")";
 		return os;
 	}
@@ -100,6 +117,7 @@ namespace surfy::geom {
 	*/
 
 	std::ostream& operator<<(std::ostream& os, const Shape& shape) {
+
 		if (shape.type == "Point") {
 
 			os << "POINT (";
@@ -108,13 +126,35 @@ namespace surfy::geom {
 
 		} else if (shape.type == "Line") {
 
-			os << "LINESTRING (";
+			os << "LINESTRING ";
 			print::line(os, shape.geom.line.coords);
+
+		} else if (shape.type == "MultiLine") {
+
+			os << "MULTILINESTRING (";
+			for (int i = 0; i < shape.size; ++i) {
+				print::line(os, shape.geom.multiLine.items[i].coords);
+				if (i != shape.size - 1) {
+					os << ",";
+				}
+			}
 			os << ")";
 
 		} else if (shape.type == "Polygon") {
+
 			os << "POLYGON ";
 			print::polygon(os, shape.geom.polygon);
+
+		} else if (shape.type == "MultiPolygon") {
+
+			os << "MULTIPOLYGON (";
+			for (int i = 0; i < shape.size; ++i) {
+				print::polygon(os, shape.geom.multiPolygon.items[i]);
+				if (i != shape.size - 1) {
+					os << ",";
+				}
+			}
+			os << ")";
 		}
 
 		return os;

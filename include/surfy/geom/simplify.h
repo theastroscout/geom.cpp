@@ -41,7 +41,7 @@ namespace surfy::geom {
 		}
 
 		// Douglas-Peucker simplification algorithm
-		void douglasPeucker(std::vector<Point>& points, const double& epsilon, std::vector<Point>& simplified) {
+		void douglasPeucker(const std::vector<Point>& points, const double& epsilon, std::vector<Point>& simplified) {
 			// Find the point with the maximum distance
 			double maxDist = 0;
 			int index = 0;
@@ -79,14 +79,36 @@ namespace surfy::geom {
 		
 		Shape result;
 
-		std::cout << "Epsilon: " << intolerance << std::endl;
+		if (type == "Point") {
+			result.type = "Point";
+			new (&result.geom.line) Line(); // Initialise Geometry::Point
 
-		if (type == "Line") {
+			result.geom.point.x = geom.point.x;
+			result.geom.point.y = geom.point.y;
+
+		} else if (type == "Line") {
+
 			result.type = "Line";
 			new (&result.geom.line) Line(); // Initialise Geometry::Line
 
 			simplify::douglasPeucker(geom.line.coords, intolerance, result.geom.line.coords);
+
+		} else if (type == "MultiLine") {
+
+			result.type = "MultiLine";
+			new (&result.geom.multiLine) MultiLine(); // Initialise Geometry::Line
+
+			for (int i = 0; i < size; ++i) {
+				const Line& srcLine = geom.multiLine.items[i];
+				Line line;
+				if (!srcLine.empty) {
+					simplify::douglasPeucker(srcLine.coords, intolerance, line.coords);
+				}
+				result.geom.multiLine.items.push_back(line);
+			}
+
 		} else if (type == "Polygon") {
+
 			result.type = "Polygon";
 			new (&result.geom.polygon) Polygon(); // Initialise Geometry::Polygon
 
@@ -97,9 +119,32 @@ namespace surfy::geom {
 			if (!geom.polygon.inner.coords.empty()) {
 				simplify::douglasPeucker(geom.polygon.inner.coords, intolerance, result.geom.polygon.inner.coords);
 			}
+
+		} else if (type == "MultiPolygon") {
+
+			result.type = "MultiPolygon";
+			new (&result.geom.multiPolygon) MultiPolygon(); // Initialise Geometry::Polygon
+
+			for (int i = 0; i < size; ++i) {
+				const Polygon& srcPoly = geom.multiPolygon.items[i];
+				Polygon poly;
+				
+				if (!srcPoly.outer.empty) {
+					simplify::douglasPeucker(srcPoly.outer.coords, intolerance, poly.outer.coords);
+				}
+
+				if (!srcPoly.inner.empty) {
+					simplify::douglasPeucker(srcPoly.inner.coords, intolerance, poly.inner.coords);
+				}
+
+				result.geom.multiPolygon.items.push_back(poly);
+			}
+
+			
+
 		}
 
-		refresh();
+		result.refresh();
 
 		return result;
 	}
