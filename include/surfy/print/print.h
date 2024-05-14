@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include "include/json.h"
+#include "../../json.h"
 
 
 namespace surfy {

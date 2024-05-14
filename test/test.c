@@ -1,16 +1,11 @@
-#include "include/surfy/print/print.h"
-#include "include/surfy/geom/geom.h"
-#include <iostream>
-
-#include "include/json.h"
+#include "../include/json.h"
 using json = nlohmann::ordered_json;
 
-#include <vector>
-
-#include "include/surfy/geom/geom.h"
-namespace sg = surfy::geom;
-
+#include "../include/surfy/print/print.h"
 using surfy::print;
+
+#include "../include/surfy/geom/geom.h"
+namespace sg = surfy::geom;
 
 
 // Global Config

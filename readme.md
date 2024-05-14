@@ -1,5 +1,5 @@
 # Surfy.Geom C++
-Demo test/main.cpp
+Demo test/test.c
 
 ## Installation
 
