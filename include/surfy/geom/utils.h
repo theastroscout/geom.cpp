@@ -149,11 +149,13 @@ namespace surfy::geom::utils {
 	}
 
 	// Function to check if three points are collinear (lie on the same line)
-	bool collinear(const Point& p1, const Point& p2, const Point& p3) {
+	bool collinear(const Point& p1, const Point& p2, const Point& p3, const double& epsilon) {
 		// return (p2.y - p1.y) * (p3.x - p2.x) == (p3.y - p2.y) * (p2.x - p1.x);
+
 		double slope1 = (p2.y - p1.y) * (p3.x - p2.x);
 		double slope2 = (p3.y - p2.y) * (p2.x - p1.x);
-		double epsilon = 1e-9; // Adjust epsilon based on your tolerance requirements
+		// double epsilon = ; // We can adjust epsilon based on tolerance requirements
+		// std::cout << std::abs(slope1 - slope2) << std::endl;
 		return std::abs(slope1 - slope2) < epsilon;
 	}
 
@@ -164,7 +166,7 @@ namespace surfy::geom::utils {
 
 	*/
 
-	void prune(Coords& coords) {
+	void prune(Coords& coords, const double& epsilon = 1e-10) {
 		if (coords.size() < 3) {
 			// Not enough vertices
 			return;
@@ -179,7 +181,7 @@ namespace surfy::geom::utils {
 			const Point& p3 = *(it + 1);
 
 			// Check if the 3 vertices are collinear
-			if (collinear(p1, p2, p3)) {
+			if (collinear(p1, p2, p3, epsilon)) {
 				// If collinear remove the middle vertex
 				it = coords.erase(it);
 			} else {

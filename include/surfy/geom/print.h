@@ -4,6 +4,9 @@ Printer
 
 */
 
+#include <sstream>
+#include <iomanip>
+
 namespace surfy::geom {
 
 	namespace print {
@@ -14,8 +17,8 @@ namespace surfy::geom {
 		*/
 
 		void point(std::ostream& os, const Point& point) {
+			os << std::setprecision(7) << std::noshowpoint << point.x << " " << point.y;
 			// os << std::to_string(point.x) << " " << std::to_string(point.y);
-			os << point.x << " " << point.y;
 		}
 
 		/*

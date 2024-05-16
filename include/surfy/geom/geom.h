@@ -58,7 +58,7 @@ namespace surfy::geom {
 		Coords parseCoordsString(const std::string& str);
 		double length(const std::vector<Point>& coords, size_t size);
 		float area(const std::vector<Point>& coords, size_t size);
-		void prune(Coords& coords);
+		void prune(Coords& coords, const double& epsilon);
 	};
 
 	namespace parser {
@@ -495,15 +495,15 @@ namespace surfy::geom {
 						type = "Polygon";
 						new (&geom.polygon) Polygon();
 						geom.polygon = items[0];
-						utils::prune(geom.polygon.outer.coords);
-						utils::prune(geom.polygon.inner.coords);
+						utils::prune(geom.polygon.outer.coords, 1e-10);
+						utils::prune(geom.polygon.inner.coords, 1e-10);
 					} else {
 						type = "MultiPolygon";
 						new (&geom.multiPolygon) MultiPolygon();
 
 						for (Polygon& item : items) {
-							utils::prune(item.outer.coords);
-							utils::prune(item.inner.coords);
+							utils::prune(item.outer.coords, 1e-10);
+							utils::prune(item.inner.coords, 1e-10);
 						}
 
 						geom.multiPolygon.items = items;
