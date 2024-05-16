@@ -1,5 +1,5 @@
-#ifndef GEOM_HPP
-#define GEOM_HPP
+#ifndef SURFY_GEOM_HPP
+#define SURFY_GEOM_HPP
 #pragma once
 #include <iostream>
 #include <string>
@@ -7,22 +7,26 @@
 
 namespace surfy::geom {
 
+	using BBox = std::array<double, 4>;
+
+
 	struct Geometry {
 		unsigned int vertices = 0;
-		double length = 0;
-		double area = 0;
+		double length = .0;
+		double area = .0;
 		bool empty = true;
 	};
 
 	struct Point : public Geometry {
 		double x, y;
 		std::string wkt();
-
 	};
+
+	using Coords = std::vector<Point>;
 
 	struct Line : public Geometry {
 		bool closed = false;
-		std::vector<Point> coords;
+		Coords coords;
 		std::string wkt();
 	};
 
@@ -48,11 +52,13 @@ namespace surfy::geom {
 	};
 
 	namespace utils {
-		bool isClosed(const std::vector<Point>& coords);
+		bool isClosed(const Coords& coords);
 		double distance(const Point& p1, const Point& p2);
-		std::vector<Point> parseCoordsString(const std::string& str);
+		BBox bbox(const Coords& coords);
+		Coords parseCoordsString(const std::string& str);
 		double length(const std::vector<Point>& coords, size_t size);
 		float area(const std::vector<Point>& coords, size_t size);
+		void prune(Coords& coords);
 	};
 
 	namespace parser {
@@ -130,9 +136,11 @@ namespace surfy::geom {
 		std::string source;
 		unsigned int vertices = 0;
 		unsigned int size = 0;
-		double length = 0;
-		double area = 0;
+		double length = .0;
+		double area = .0;
 		bool empty = true;
+		BBox bbox = {.0, .0, .0, .0};
+
 
 		union Geometry {
 			Point point;
@@ -149,7 +157,7 @@ namespace surfy::geom {
 		/*
 
 		WKT
-		Stringify geometry, e.g. POINT (1 2) or LINESTRING (0 0, 2 2)
+		Stringify geometry to "POINT (1 2)", "LINESTRING (0 0, 2 2)", etc.
 
 		*/
 
@@ -230,6 +238,8 @@ namespace surfy::geom {
 					empty = false;
 				}
 
+				bbox = utils::bbox(geom.line.coords);
+
 			} else if (type == "MultiLine") {
 				
 				geom.multiLine.size = geom.multiLine.items.size();
@@ -281,6 +291,12 @@ namespace surfy::geom {
 						geom.polygon.length += geom.polygon.outer.length;
 						geom.polygon.area += geom.polygon.outer.area;
 					}
+
+					BBox outerBBox = utils::bbox(geom.polygon.outer.coords);
+					bbox[0] += outerBBox[0];
+					bbox[1] += outerBBox[1];
+					bbox[2] += outerBBox[2];
+					bbox[3] += outerBBox[3];
 				}
 
 				if (!geom.polygon.inner.coords.empty()) {
@@ -300,6 +316,12 @@ namespace surfy::geom {
 						geom.polygon.length += geom.polygon.inner.length;
 						geom.polygon.area += geom.polygon.inner.area;
 					}
+
+					BBox innerBBox = utils::bbox(geom.polygon.inner.coords);
+					bbox[0] += innerBBox[0];
+					bbox[1] += innerBBox[1];
+					bbox[2] += innerBBox[2];
+					bbox[3] += innerBBox[3];
 				}
 
 				// Update Shape
@@ -376,6 +398,7 @@ namespace surfy::geom {
 				size = geom.multiPolygon.size;
 				vertices = geom.multiPolygon.vertices;
 				length = geom.multiPolygon.length;
+				area = geom.multiPolygon.area;
 
 				if (vertices != 0) {
 					empty = false;
@@ -384,7 +407,7 @@ namespace surfy::geom {
 			}
 		}		
 
-		Shape (const std::string& src = "") {
+		Shape (const std::string& src = "", const bool optimized = false) {
 			source = src; // Store source just in case
 
 			if (src.empty()) {
@@ -398,7 +421,7 @@ namespace surfy::geom {
 			std::string body = src.substr(startPos + 1, endPos - startPos - 1);
 
 			if (startPos == std::string::npos || endPos == std::string::npos) {
-				type = "Error";
+				type = "Dummy";
 				return;
 			}
 
@@ -407,7 +430,7 @@ namespace surfy::geom {
 				type = "Point";
 				new (&geom.point) Point();
 
-				std::vector<Point> coords = utils::parseCoordsString(body);
+				Coords coords = utils::parseCoordsString(body);
 				geom.point = coords[0];
 
 			} else if (src.find("MULTILINESTRING") != std::string::npos) {
@@ -442,8 +465,9 @@ namespace surfy::geom {
 
 			}  else if (src.find("MULTIPOLYGON") != std::string::npos) {
 				
-				type = "MultiPolygon";
-				new (&geom.multiPolygon) MultiPolygon();
+				std::vector<Polygon> items;
+
+				
 
 				size_t pos = 0;
 				while (pos < body.size()) {
@@ -457,7 +481,33 @@ namespace surfy::geom {
 					pos = end + 1;
 
 					Polygon poly = parser::polygon(polyStr);
-					geom.multiPolygon.items.push_back(poly);
+					items.push_back(poly);
+				}
+
+				/*
+
+				Optimized
+
+				*/
+
+				if (optimized) {
+					if (items.size() == 1) {
+						type = "Polygon";
+						new (&geom.polygon) Polygon();
+						geom.polygon = items[0];
+						utils::prune(geom.polygon.outer.coords);
+						utils::prune(geom.polygon.inner.coords);
+					} else {
+						type = "MultiPolygon";
+						new (&geom.multiPolygon) MultiPolygon();
+
+						for (Polygon& item : items) {
+							utils::prune(item.outer.coords);
+							utils::prune(item.inner.coords);
+						}
+
+						geom.multiPolygon.items = items;
+					}
 				}
 
 
@@ -467,6 +517,9 @@ namespace surfy::geom {
 				Polygon poly = parser::polygon(body);
 				new (&geom.polygon) Polygon(poly);
 
+			} else {
+				type = "Dummy";
+				return;
 			}
 
 			// Update size, Length, and Area
@@ -474,6 +527,10 @@ namespace surfy::geom {
 		}
 
 		Shape simplify(const double& intolerance);
+
+		void optimize() {
+			std::cout << "OPTI" << std::endl;
+		};
 
 		/*
 		Shape (const Polygon& poly) {

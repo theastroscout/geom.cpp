@@ -17,6 +17,27 @@ namespace surfy::geom::utils {
 
 		return (front.x == back.x && front.y == back.y);
 	}
+
+	BBox bbox(const Coords& coords) {
+		
+		if (coords.empty()) {
+			return {.0, .0, .0, .0};
+		}
+		
+		double minX = coords[0].x;
+		double minY = coords[0].y;
+		double maxX = coords[0].x;
+		double maxY = coords[0].y;
+		
+		for (const auto& point : coords) {
+			minX = std::min(minX, point.x);
+			minY = std::min(minY, point.y);
+			maxX = std::max(maxX, point.x);
+			maxY = std::max(maxY, point.y);
+		}
+		
+		return { minX, minY, maxX, maxY };
+	}
 	
 	/*
 
@@ -34,7 +55,7 @@ namespace surfy::geom::utils {
 
 	*/
 
-	std::vector<Point> parseCoordsString(const std::string& str) {
+	Coords parseCoordsString(const std::string& str) {
 
 		std::vector<Point> coords;
 		double x, y;
@@ -125,6 +146,39 @@ namespace surfy::geom::utils {
 			}
 		}
 		return inside;
+	}
+
+	// Function to check if three points are collinear (lie on the same line)
+	bool collinear(const Point& p1, const Point& p2, const Point& p3) {
+		return (p2.y - p1.y) * (p3.x - p2.x) == (p3.y - p2.y) * (p2.x - p1.x);
+	}
+
+	/*
+
+	Prune
+	Erase vertices laying on the same line
+
+	*/
+
+	void prune(Coords& coords) {
+		if (coords.size() < 3) {
+			// Not enough vertices
+			return;
+		}
+
+		// Iterate through each vertex of the coords excluding the first and last
+		for (auto it = std::next(coords.begin()); it != std::prev(coords.end()); ++it) {
+			// Get the current vertex and its adjacent vertices
+			const Point& p1 = *(std::prev(it));
+			const Point& p2 = *it;
+			const Point& p3 = *(std::next(it));
+
+			// Check if the 3 vertices are collinear
+			if (collinear(p1, p2, p3)) {
+				// If collinear, kill middle vertex.
+				it = coords.erase(it);
+			}
+		}
 	}
 
 }
