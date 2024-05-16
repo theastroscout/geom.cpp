@@ -150,7 +150,11 @@ namespace surfy::geom::utils {
 
 	// Function to check if three points are collinear (lie on the same line)
 	bool collinear(const Point& p1, const Point& p2, const Point& p3) {
-		return (p2.y - p1.y) * (p3.x - p2.x) == (p3.y - p2.y) * (p2.x - p1.x);
+		// return (p2.y - p1.y) * (p3.x - p2.x) == (p3.y - p2.y) * (p2.x - p1.x);
+		double slope1 = (p2.y - p1.y) * (p3.x - p2.x);
+		double slope2 = (p3.y - p2.y) * (p2.x - p1.x);
+		double epsilon = 1e-9; // Adjust epsilon based on your tolerance requirements
+		return std::abs(slope1 - slope2) < epsilon;
 	}
 
 	/*
@@ -167,18 +171,23 @@ namespace surfy::geom::utils {
 		}
 
 		// Iterate through each vertex of the coords excluding the first and last
-		for (auto it = std::next(coords.begin()); it != std::prev(coords.end()); ++it) {
+		auto it = coords.begin() + 1;
+		while (it != coords.end() - 1) {
 			// Get the current vertex and its adjacent vertices
-			const Point& p1 = *(std::prev(it));
+			const Point& p1 = *(it - 1);
 			const Point& p2 = *it;
-			const Point& p3 = *(std::next(it));
+			const Point& p3 = *(it + 1);
 
 			// Check if the 3 vertices are collinear
 			if (collinear(p1, p2, p3)) {
-				// If collinear, kill middle vertex.
+				// If collinear remove the middle vertex
 				it = coords.erase(it);
+			} else {
+				// Move to the next vertex
+				++it;
 			}
 		}
+		
 	}
 
 }

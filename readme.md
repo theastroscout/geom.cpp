@@ -35,7 +35,7 @@ public:
 };
 
 // Create
-sg::Shape point = sg::Shape("POINT (1. 1.)");
+sg::Shape point("POINT (1. 1.)");
 
 ```
 
@@ -48,7 +48,7 @@ struct Point : public Geometry {
 }
 
 // Create
-sg::Shape point = sg::Shape("POINT (1 2)");
+sg::Shape point("POINT (1 2)");
 std::string point.type // Point
 double point.geom.point.x // 1
 double point.geom.point.y // 2
@@ -73,7 +73,7 @@ struct Line : public Geometry {
 }
 
 // Create
-sg::Shape line = sg::Shape("LINESTRING (1 1, 2 2)");
+sg::Shape line("LINESTRING (1 1, 2 2)");
 
 std::string line.type // Line
 bool line.empty
@@ -117,7 +117,7 @@ Only Outer: "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))"
 Both Outer and Inner: "POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))"
 */
 
-sg::Shape poly = sg::Shape("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
+sg::Shape poly("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
 std::string poly.type // Polygon
 
 // Overall (Outer + Inner)
@@ -160,13 +160,13 @@ Clip takes Shape and Mask defined by four points representing a rectangular box,
 std::vector<sg::Point> mask = {{0, 0}, {0, 6}, {6, 6}, {6, 0}};
 
 // Clip Polygon
-sg::Shape poly = sg::Shape("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
+sg::Shape poly("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
 sg::Shape clippedPolygon = sg::clip(poly, mask);
 // Geometry in clippedPolygon.geom.polygon
 std::cout << clippedPolygon << std::end; // POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))
 
 // Clip Line
-sg::Shape line = sg::Shape("LINESTRING (0 0, 5 5, 11 10, 15 15)");
+sg::Shape line("LINESTRING (0 0, 5 5, 11 10, 15 15)");
 sg::Shape clippedLine = sg::clip(line, mask);
 // Geometry in clippedLine.geom.line
 std::cout << clippedLine << std::end; // LINESTRING ((0 0, 5 5, 6 5.83333))
@@ -181,11 +181,11 @@ Tolerance in the context of the Douglas-Peucker algorithm refers to the maximum 
 Simplify returns new Shape.
 
 ```cpp
-sg::Shape complexLine = sg::Shape("LINESTRING (0 0, 2 2, 5 5, 6 6, 7 7)");
+sg::Shape complexLine("LINESTRING (0 0, 2 2, 5 5, 6 6, 7 7)");
 sg::Shape simpleLine = complexLine.simplify(1.);
 std::cout << simpleLine << std::endl; // "LINESTRING (0 0, 7 7)"
 
-sg::Shape complexPolygon = sg::Shape("POLYGON ()");
+sg::Shape complexPolygon("POLYGON ()");
 sg::Shape simplePolygon = complexPolygon.simplify(1.);
 std::cout << simplePolygon << std::endl;
 

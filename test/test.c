@@ -14,7 +14,7 @@ json config;
 void pointTest() {
 	print("\n\n#### Point Test ####\n\n");
 
-	sg::Shape point = sg::Shape("POINT (2 3)");
+	sg::Shape point("POINT (2 3)");
 	print("Point print:", point);
 
 	/*
@@ -38,13 +38,13 @@ void pointTest() {
 
 	*/
 
-	sg::Shape mask = sg::Shape("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))");
+	sg::Shape mask("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))");
 	print("Mask:", mask);
 	
 	sg::Shape clippedPointOutside = sg::clip(point, mask);
 	print("Clipped Point (Outside Mask)", clippedPointOutside);
 	
-	sg::Shape pointInside = sg::Shape("POINT (.5 .5)");
+	sg::Shape pointInside("POINT (.5 .5)");
 	sg::Shape clippedPointInside = sg::clip(pointInside, mask);
 	print("\nPoint (Inside Mask):", pointInside);
 	print("Clipped Point (Inside Mask):", clippedPointInside);
@@ -61,7 +61,7 @@ void pointTest() {
 void lineTest() {
 	print("\n\n#### Line Test ####\n\n");
 
-	sg::Shape line = sg::Shape("LINESTRING (0 0, 0 10, 10 10, 10 0, 0 0)");
+	sg::Shape line("LINESTRING (0 0, 0 10, 10 10, 10 0, 0 0)");
 	print("Line print:", line);
 
 	/*
@@ -91,10 +91,10 @@ void lineTest() {
 
 	*/
 
-	sg::Shape line4clip = sg::Shape("LINESTRING (0 0, 5 5, 11 10, 15 15)");
+	sg::Shape line4clip("LINESTRING (0 0, 5 5, 11 10, 15 15)");
 	print("Clip line:", line4clip);
 
-	sg::Shape mask = sg::Shape("POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0))");
+	sg::Shape mask("POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0))");
 	print("Mask:", mask);
 	
 	sg::Shape clippedLine = sg::clip(line4clip, mask);
@@ -107,7 +107,7 @@ void lineTest() {
 
 	*/
 
-	sg::Shape line4clip_closed = sg::Shape("LINESTRING (0 0, 0 10, 10 10, 10 0, 0 0)");
+	sg::Shape line4clip_closed("LINESTRING (0 0, 0 10, 10 10, 10 0, 0 0)");
 	print("Clip Closed Line:", line4clip_closed);
 
 	sg::Shape clippedClosedLine = sg::clip(line4clip_closed, mask);
@@ -120,7 +120,7 @@ void lineTest() {
 
 	*/
 
-	sg::Shape complexLine = sg::Shape("LINESTRING (0 0, 2 2, 3 3, 10 2, 6 6, 7 7, 30 30)");
+	sg::Shape complexLine("LINESTRING (0 0, 2 2, 3 3, 10 2, 6 6, 7 7, 30 30)");
 	print("Complex Line:", complexLine);
 
 	sg::Shape simpleLine = complexLine.simplify(2);
@@ -130,7 +130,7 @@ void lineTest() {
 void multiLineTest() {
 	print("\n\n#### MultiLine Test ####\n\n");
 
-	sg::Shape multiLine = sg::Shape("MULTILINESTRING ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 2 2, 3 3, 10 2, 6 6, 7 7, 30 30),())");
+	sg::Shape multiLine("MULTILINESTRING ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 2 2, 3 3, 10 2, 6 6, 7 7, 30 30),())");
 	print("MultiLine print:", multiLine);
 	
 	/*
@@ -169,7 +169,7 @@ void multiLineTest() {
 
 	*/
 
-	sg::Shape mask = sg::Shape("POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0))");
+	sg::Shape mask("POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0))");
 	print("Mask: ", mask);
 	
 	sg::Shape clippedLine = sg::clip(multiLine, mask);
@@ -189,7 +189,7 @@ void multiLineTest() {
 void polygonTest() {
 	print("\n\n#### Polygon Test ####\n\n");
 
-	sg::Shape poly = sg::Shape("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
+	sg::Shape poly("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
 	print("Polygon Print", poly);
 
 	/*
@@ -228,7 +228,7 @@ void polygonTest() {
 
 	// Clip Test
 
-	sg::Shape mask = sg::Shape("POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0))");
+	sg::Shape mask("POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0))");
 	print("Mask: ", mask);
 	
 	sg::Shape clippedPolygon = sg::clip(poly, mask);
@@ -237,7 +237,7 @@ void polygonTest() {
 
 	// Simplify Test
 
-	sg::Shape complexPoly = sg::Shape("POLYGON ((-0.0426899 51.5166536, -0.0426874 51.51564, -0.0415785 51.5156202, -0.0416071 51.5158, -0.0416962 51.5159493, -0.0421352 51.5163716, -0.0425499 51.5166216, -0.0426899 51.5166536))");
+	sg::Shape complexPoly("POLYGON ((-0.0426899 51.5166536, -0.0426874 51.51564, -0.0415785 51.5156202, -0.0416071 51.5158, -0.0416962 51.5159493, -0.0421352 51.5163716, -0.0425499 51.5166216, -0.0426899 51.5166536))");
 	print("Complex Polygon:", complexPoly);
 	sg::Shape simplePoly = complexPoly.simplify(.0001);
 	print("Simplified Polygon:", simplePoly);
@@ -246,7 +246,7 @@ void polygonTest() {
 void multiPolygonTest() {
 	print("\n\n#### MultiPolygon Test ####\n\n");
 
-	sg::Shape multiPolygon = sg::Shape("MULTIPOLYGON (((40 40, 41 41, 20 45, 45 30, 40 40),(30 20, 20 15, 20 25, 30 20)),((40 40, 20 45, 45 30, 40 40)),((40 40, 20 45, 45 30, 50 50, 40 40)))");
+	sg::Shape multiPolygon("MULTIPOLYGON (((40 40, 41 41, 20 45, 45 30, 40 40),(30 20, 20 15, 20 25, 30 20)),((40 40, 20 45, 45 30, 40 40)),((40 40, 20 45, 45 30, 50 50, 40 40)))");
 
 	print("MultiPolygon Print:", multiPolygon);
 
@@ -302,7 +302,7 @@ void multiPolygonTest() {
 
 	// Clip Test
 
-	sg::Shape mask = sg::Shape("POLYGON ((20 20, 20 40, 40 40, 40 20, 20 20))");
+	sg::Shape mask("POLYGON ((20 20, 20 40, 40 40, 40 20, 20 20))");
 	print("Mask: ", mask);
 	
 	sg::Shape clippedMultiPolygon = sg::clip(multiPolygon, mask);
@@ -317,13 +317,29 @@ void multiPolygonTest() {
 
 }
 
+/*
+
+Prune Test
+Remove points lying on the same line
+
+*/
+
+void prune() {
+	print("\n\n#### Prune Test ####\n\n");
+	sg::Shape line("LINESTRING (0 0, 1 1, 2 2, 3 3, 4 3, 5 2, 6 1, 7 0)");
+	print("Line for pruning:", line);
+	sg::utils::prune(line.geom.line.coords);
+	print("Pruned Line", line); // LINESTRING (0 0, 3 3, 4 3, 7 0)
+}
+
 int main() {
 
-	pointTest();
-	lineTest();
-	multiLineTest();
-	polygonTest();
-	multiPolygonTest();
+	// pointTest();
+	// lineTest();
+	// multiLineTest();
+	// polygonTest();
+	// multiPolygonTest();
+	prune();
 
 	return 0;
 }
