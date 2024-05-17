@@ -7,9 +7,9 @@ Parsing string
 
 namespace surfy::geom::parser {
 
-	Polygon polygon(const std::string& body) {
+	types::Polygon polygon(const std::string& body) {
 
-		Polygon poly;
+		types::Polygon poly;
 
 		int pass = 1;
 		size_t pos = 0;
@@ -24,7 +24,7 @@ namespace surfy::geom::parser {
 
 			pos = end + 1;
 
-			std::vector<Point> coords = utils::parseCoordsString(polyStr);
+			Coords coords = utils::parseCoordsString(polyStr);
 
 			if (pass == 1) {
 				poly.outer.coords = coords;

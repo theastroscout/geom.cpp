@@ -11,7 +11,7 @@ namespace surfy::geom::utils {
 
 	*/
 
-	bool isClosed(const std::vector<Point>& coords) {
+	bool isClosed(const Coords& coords) {
 		Point front = coords.front();
 		Point back = coords.back();
 
@@ -57,7 +57,7 @@ namespace surfy::geom::utils {
 
 	Coords parseCoordsString(const std::string& str) {
 
-		std::vector<Point> coords;
+		Coords coords;
 		double x, y;
 		char comma;
 
@@ -83,7 +83,7 @@ namespace surfy::geom::utils {
 
 	*/
 
-	double length(const std::vector<Point>& coords, size_t size = 0) {
+	double length(const Coords& coords, size_t size = 0) {
 		double length = 0;
 		if (size == 0) {
 			size = coords.size();
@@ -105,7 +105,7 @@ namespace surfy::geom::utils {
 
 	*/
 
-	float area(const std::vector<Point>& coords, size_t size = 0) {
+	float area(const Coords& coords, size_t size = 0) {
 		float area = .0;
 		if (size == 0) {
 			size = coords.size();
@@ -123,8 +123,8 @@ namespace surfy::geom::utils {
 
 	*/
 
-	bool inside(const Point& point, const std::vector<Point>& polygon) {
-		for (const Point& vertex : polygon) {
+	bool inside(const Point& point, const Coords& coords) {
+		for (const Point& vertex : coords) {
 			if (vertex.x == point.x && vertex.y == point.y) {
 				return true;
 			}
@@ -132,13 +132,13 @@ namespace surfy::geom::utils {
 
 		bool inside = false;
 
-		for (int i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++) {
-			bool isAboveI = (polygon[i].y > point.y);
-			bool isAboveJ = (polygon[j].y > point.y);
+		for (int i = 0, j = coords.size() - 1; i < coords.size(); j = i++) {
+			bool isAboveI = (coords[i].y > point.y);
+			bool isAboveJ = (coords[j].y > point.y);
 			bool yIntersect = (isAboveI != isAboveJ);
 			
-			double slope = (polygon[j].x - polygon[i].x) / (polygon[j].y - polygon[i].y);
-			double intersectX = slope * (point.y - polygon[i].y) + polygon[i].x;
+			double slope = (coords[j].x - coords[i].x) / (coords[j].y - coords[i].y);
+			double intersectX = slope * (point.y - coords[i].y) + coords[i].x;
 			bool xIntersect = (point.x <= intersectX); // Include equality
 
 			if (yIntersect && xIntersect) {

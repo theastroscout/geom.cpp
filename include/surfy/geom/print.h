@@ -16,8 +16,13 @@ namespace surfy::geom {
 
 		*/
 
-		void point(std::ostream& os, const Point& point) {
-			os << std::setprecision(7) << std::noshowpoint << point.x << " " << point.y;
+		void point(std::ostream& os, const Point& point, const bool& compressed) {
+
+			if (compressed) {
+				os << std::fixed << std::setprecision(0) << std::round(point.x * 1e6) << " " << std::round(point.y * 1e6);
+			} else {
+				os << std::setprecision(8) << std::noshowpoint << point.x << " " << point.y;
+			}
 			// os << std::to_string(point.x) << " " << std::to_string(point.y);
 		}
 
@@ -27,11 +32,11 @@ namespace surfy::geom {
 
 		*/
 
-		void line(std::ostream& os, const std::vector<Point>& coords) {
+		void line(std::ostream& os, const Coords& coords, const bool& compressed) {
 			os << "(";
 			size_t length = coords.size();
 			for (size_t i = 0; i < length; ++i) {
-				point(os, coords[i]);
+				point(os, coords[i], compressed);
 				if (i != length - 1) {
 					os << ", ";
 				}
@@ -45,14 +50,15 @@ namespace surfy::geom {
 
 		*/
 
-		void polygon(std::ostream& os, const Polygon& poly) {
+		void polygon(std::ostream& os, const types::Polygon& poly, const bool& compressed) {
+			
 			os << "(";
 
-			line(os, poly.outer.coords);
+			line(os, poly.outer.coords, compressed);
 
 			if (!poly.inner.coords.empty()) {
 				os << ",";
-				line(os, poly.inner.coords);
+				line(os, poly.inner.coords, compressed);
 			}
 
 			os << ")";
@@ -66,6 +72,30 @@ namespace surfy::geom {
 	*/
 
 	std::ostream& operator<<(std::ostream& os, const Point& point) {
+		os << "(";
+		print::point(os, point);
+		os << ")";
+		return os;
+	}
+
+	/*
+
+	Coords
+
+	*/
+
+	std::ostream& operator<<(std::ostream& os, const Coords& coords) {
+		print::line(os, coords);
+		return os;
+	}
+
+	/*
+
+	Point Type
+
+	*/
+
+	std::ostream& operator<<(std::ostream& os, const types::Point& point) {
 		os << "POINT (";
 		print::point(os, point);
 		os << ")";
@@ -74,11 +104,11 @@ namespace surfy::geom {
 
 	/*
 
-	Line
+	Line Type
 
 	*/
 
-	std::ostream& operator<<(std::ostream& os, const Line& line) {
+	std::ostream& operator<<(std::ostream& os, const types::Line& line) {
 		os << "LINESTRING ";
 		print::line(os, line.coords);
 		return os;
@@ -86,11 +116,11 @@ namespace surfy::geom {
 
 	/*
 
-	MultiLine
+	MultiLine Type
 
 	*/
 
-	std::ostream& operator<<(std::ostream& os, const MultiLine& multiLine) {
+	std::ostream& operator<<(std::ostream& os, const types::MultiLine& multiLine) {
 		os << "MULTILINESTRING (";
 		for (int i = 0; i < multiLine.size; ++i) {
 			print::line(os, multiLine.items[i].coords);
@@ -104,11 +134,11 @@ namespace surfy::geom {
 
 	/*
 
-	Polygon
+	Polygon Type
 
 	*/
 
-	std::ostream& operator<<(std::ostream& os, const Polygon& poly) {
+	std::ostream& operator<<(std::ostream& os, const types::Polygon& poly) {
 		os << "POLYGON ";
 		print::polygon(os, poly);
 		return os;
