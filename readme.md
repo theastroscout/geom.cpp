@@ -161,15 +161,15 @@ std::vector<sg::Point> mask = {{0, 0}, {0, 6}, {6, 6}, {6, 0}};
 
 // Clip Polygon
 sg::Shape poly("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))");
-sg::Shape clippedPolygon = sg::clip(poly, mask);
-// Geometry in clippedPolygon.geom.polygon
-std::cout << clippedPolygon << std::end; // POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))
+sg::clip(poly, mask);
+// Geometry in poly.geom.polygon
+std::cout << poly << std::end; // POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0),(0 0, 0 5, 5 5, 5 0, 0 0))
 
 // Clip Line
 sg::Shape line("LINESTRING (0 0, 5 5, 11 10, 15 15)");
-sg::Shape clippedLine = sg::clip(line, mask);
-// Geometry in clippedLine.geom.line
-std::cout << clippedLine << std::end; // LINESTRING ((0 0, 5 5, 6 5.83333))
+sg::clip(line, mask);
+// Geometry in line.geom.line
+std::cout << line << std::end; // LINESTRING ((0 0, 5 5, 6 5.83333))
 
 ```
 
@@ -182,11 +182,11 @@ Simplify returns new Shape.
 
 ```cpp
 sg::Shape complexLine("LINESTRING (0 0, 2 2, 5 5, 6 6, 7 7)");
-sg::Shape simpleLine = complexLine.simplify(1.);
-std::cout << simpleLine << std::endl; // "LINESTRING (0 0, 7 7)"
+complexLine.simplify(1.);
+std::cout << complexLine << std::endl; // "LINESTRING (0 0, 7 7)"
 
 sg::Shape complexPolygon("POLYGON ()");
-sg::Shape simplePolygon = complexPolygon.simplify(1.);
-std::cout << simplePolygon << std::endl;
+complexPolygon.simplify(1.);
+std::cout << complexPolygon << std::endl;
 
 ```

@@ -1,10 +1,10 @@
-#include "../include/json.h"
+#include "../include/json.hpp"
 using json = nlohmann::ordered_json;
 
-#include "../include/surfy/print/print.h"
+#include "../include/surfy/utils/print.hpp"
 using surfy::print;
 
-#include "../include/surfy/geom/geom.h"
+#include "../include/surfy/geom/geom.hpp"
 namespace sg = surfy::geom;
 
 
@@ -45,15 +45,14 @@ void pointTest() {
 	print("Clipped Point (Outside Mask)", clippedPointOutside);
 	
 	sg::Shape pointInside("POINT (.5 .5)");
-	sg::Shape clippedPointInside = sg::clip(pointInside, mask);
+	sg::clip(pointInside, mask);
 	print("\nPoint (Inside Mask):", pointInside);
-	print("Clipped Point (Inside Mask):", clippedPointInside);
 	print("\n");
 
 	// Simplify Test
 
-	sg::Shape simplePoint = point.simplify(1);
-	print("Simplified Point is the same Point:", simplePoint);
+	point.simplify(1);
+	print("Simplified Point is the same Point:", point);
 
 
 }
@@ -97,8 +96,8 @@ void lineTest() {
 	sg::Shape mask("POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0))");
 	print("Mask:", mask);
 	
-	sg::Shape clippedLine = sg::clip(line4clip, mask);
-	print("Clipped Line:", clippedLine);
+	sg::clip(line4clip, mask);
+	print("Clipped Line:", line4clip);
 	print("\n");
 
 	/*
@@ -110,8 +109,8 @@ void lineTest() {
 	sg::Shape line4clip_closed("LINESTRING (0 0, 0 10, 10 10, 10 0, 0 0)");
 	print("Clip Closed Line:", line4clip_closed);
 
-	sg::Shape clippedClosedLine = sg::clip(line4clip_closed, mask);
-	print("Clipped Closed Line:", clippedClosedLine);
+	sg::clip(line4clip_closed, mask);
+	print("Clipped Closed Line:", line4clip_closed);
 	print("\n");
 
 	/*
@@ -123,7 +122,7 @@ void lineTest() {
 	sg::Shape complexLine("LINESTRING (0 0, 2 2, 3 3, 10 2, 6 6, 7 7, 30 30)");
 	print("Complex Line:", complexLine);
 
-	sg::Shape simpleLine = complexLine.simplify(2);
+	complexLine.simplify(2);
 	print("Simplified Line:", simpleLine);
 }
 
@@ -172,8 +171,8 @@ void multiLineTest() {
 	sg::Shape mask("POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0))");
 	print("Mask: ", mask);
 	
-	sg::Shape clippedLine = sg::clip(multiLine, mask);
-	print("Clipped Line:", clippedLine);
+	sg::clip(multiLine, mask);
+	print("Clipped Line:", multiLine);
 	print("\n");
 
 	/*
@@ -182,8 +181,8 @@ void multiLineTest() {
 
 	*/
 
-	sg::Shape simpleMultiLine = multiLine.simplify(2);
-	print("Simplified MultiLine:", simpleMultiLine);
+	multiLine.simplify(2);
+	print("Simplified MultiLine:", multiLine);
 }
 
 void polygonTest() {
@@ -231,16 +230,16 @@ void polygonTest() {
 	sg::Shape mask("POLYGON ((0 0, 0 6, 6 6, 6 0, 0 0))");
 	print("Mask: ", mask);
 	
-	sg::Shape clippedPolygon = sg::clip(poly, mask);
-	print("Clipped Polygon:", clippedPolygon);
+	sg::clip(poly, mask);
+	print("Clipped Polygon:", poly);
 	print("\n");
 
 	// Simplify Test
 
 	sg::Shape complexPoly("POLYGON ((-0.0426899 51.5166536, -0.0426874 51.51564, -0.0415785 51.5156202, -0.0416071 51.5158, -0.0416962 51.5159493, -0.0421352 51.5163716, -0.0425499 51.5166216, -0.0426899 51.5166536))");
 	print("Complex Polygon:", complexPoly);
-	sg::Shape simplePoly = complexPoly.simplify(.0001);
-	print("Simplified Polygon:", simplePoly);
+	complexPoly.simplify(.0001);
+	print("Simplified Polygon:", complexPoly);
 }
 
 void multiPolygonTest() {
@@ -305,14 +304,14 @@ void multiPolygonTest() {
 	sg::Shape mask("POLYGON ((20 20, 20 40, 40 40, 40 20, 20 20))");
 	print("Mask: ", mask);
 	
-	sg::Shape clippedMultiPolygon = sg::clip(multiPolygon, mask);
-	print("Clipped MultiPolygon:", clippedMultiPolygon);
+	sg::clip(multiPolygon, mask);
+	print("Clipped MultiPolygon:", multiPolygon);
 	print("\n");
 
 	// Simplify Test
 
-	sg::Shape simpleMultiPoly = multiPolygon.simplify(2);
-	print("Simplified MultiPolygon:", simpleMultiPoly);
+	multiPolygon.simplify(2);
+	print("Simplified MultiPolygon:", multiPolygon);
 
 
 }

@@ -38,7 +38,11 @@ namespace surfy::geom {
 			for (size_t i = 0; i < length; ++i) {
 				point(os, coords[i], compressed);
 				if (i != length - 1) {
-					os << ", ";
+					if (compressed) {
+						os << ",";
+					} else {
+						os << ", ";
+					}
 				}
 			}
 			os << ")";

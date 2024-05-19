@@ -1,5 +1,5 @@
 #!/bin/bash
-if CCACHE_DISABLE=1 g++ test.c -o test.app --std=c++20 -lsqlite3 -Werror -Wfatal-errors; then
+if CCACHE_DISABLE=1 g++ test.cpp -o test.app --std=c++20 -lsqlite3 -Werror -Wfatal-errors; then
 	./test.app
 else
 	echo "Compilation failed. Unable to execute ./test.app."

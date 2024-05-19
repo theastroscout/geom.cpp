@@ -150,7 +150,8 @@ namespace surfy::geom {
 		double length = .0;
 		double area = .0;
 		bool empty = true;
-		BBox bbox = {.0, .0, .0, .0};
+		BBox bbox = {360, 180, -360, -180};
+		bool optimized;
 
 
 		union Geometry {
@@ -222,8 +223,19 @@ namespace surfy::geom {
 
 		std::string compressed() {
 			std::stringstream os;
-			if (type == "Polygon") {
+			if (type == "Point") {
+				print::point(os, geom.point, true);
+			} else if (type == "Line") {
+				print::line(os, geom.line.coords, true);
+			} else if (type == "Polygon") {
 				print::polygon(os, geom.polygon, true);
+			} else if (type == "MultiPolygon") {
+				for (int i = 0; i < size; ++i) {
+					print::polygon(os, geom.multiPolygon.items[i], true);
+					if (i != size - 1) {
+						os << ",";
+					}
+				}
 			}
 
 			return os.str();
@@ -256,9 +268,8 @@ namespace surfy::geom {
 					geom.line.closed = utils::isClosed(geom.line.coords);
 					geom.line.empty = false;
 					empty = false;
+					bbox = utils::bbox(geom.line.coords);
 				}
-
-				bbox = utils::bbox(geom.line.coords);
 
 			} else if (type == "MultiLine") {
 				
@@ -276,6 +287,12 @@ namespace surfy::geom {
 
 						geom.multiLine.vertices += line.vertices;
 						geom.multiLine.length += line.length;
+
+						BBox lineBBox = utils::bbox(line.coords);
+						bbox[0] = std::min(bbox[0], lineBBox[0]);
+						bbox[1] = std::min(bbox[1], lineBBox[1]);
+						bbox[2] = std::max(bbox[2], lineBBox[2]);
+						bbox[3] = std::max(bbox[3], lineBBox[3]);
 					}
 				}
 
@@ -298,50 +315,46 @@ namespace surfy::geom {
 					size_t outerSize = geom.polygon.outer.coords.size();
 					geom.polygon.outer.vertices = outerSize;
 
-					if (geom.polygon.outer.vertices != 0){
-						geom.polygon.outer.empty = false;
+					geom.polygon.outer.empty = false;
 
-						geom.polygon.outer.closed = utils::isClosed(geom.polygon.outer.coords);
+					geom.polygon.outer.closed = utils::isClosed(geom.polygon.outer.coords);
 
-						geom.polygon.outer.length = utils::length(geom.polygon.outer.coords, outerSize);
-						geom.polygon.outer.area = utils::area(geom.polygon.outer.coords, outerSize);
+					geom.polygon.outer.length = utils::length(geom.polygon.outer.coords, outerSize);
+					geom.polygon.outer.area = utils::area(geom.polygon.outer.coords, outerSize);
 
-						// Update Polygon
-						geom.polygon.vertices += geom.polygon.outer.vertices;
-						geom.polygon.length += geom.polygon.outer.length;
-						geom.polygon.area += geom.polygon.outer.area;
-					}
+					// Update Polygon
+					geom.polygon.vertices += geom.polygon.outer.vertices;
+					geom.polygon.length += geom.polygon.outer.length;
+					geom.polygon.area += geom.polygon.outer.area;
 
 					BBox outerBBox = utils::bbox(geom.polygon.outer.coords);
-					bbox[0] += outerBBox[0];
-					bbox[1] += outerBBox[1];
-					bbox[2] += outerBBox[2];
-					bbox[3] += outerBBox[3];
+					bbox[0] = std::min(bbox[0], outerBBox[0]);
+					bbox[1] = std::min(bbox[1], outerBBox[1]);
+					bbox[2] = std::max(bbox[2], outerBBox[2]);
+					bbox[3] = std::max(bbox[3], outerBBox[3]);
 				}
 
 				if (!geom.polygon.inner.coords.empty()) {
 					size_t innerSize = geom.polygon.inner.coords.size();
 					geom.polygon.inner.vertices = innerSize;
 
-					if (geom.polygon.inner.vertices != 0) {
-						geom.polygon.inner.empty = false;
+					geom.polygon.inner.empty = false;
 
-						geom.polygon.inner.closed = utils::isClosed(geom.polygon.inner.coords);
+					geom.polygon.inner.closed = utils::isClosed(geom.polygon.inner.coords);
 
-						geom.polygon.inner.length = utils::length(geom.polygon.inner.coords, innerSize);
-						geom.polygon.inner.area = utils::area(geom.polygon.inner.coords, innerSize);
+					geom.polygon.inner.length = utils::length(geom.polygon.inner.coords, innerSize);
+					geom.polygon.inner.area = utils::area(geom.polygon.inner.coords, innerSize);
 
-						// Update Polygon
-						geom.polygon.vertices += geom.polygon.inner.vertices;
-						geom.polygon.length += geom.polygon.inner.length;
-						geom.polygon.area += geom.polygon.inner.area;
-					}
+					// Update Polygon
+					geom.polygon.vertices += geom.polygon.inner.vertices;
+					geom.polygon.length += geom.polygon.inner.length;
+					geom.polygon.area += geom.polygon.inner.area;
 
 					BBox innerBBox = utils::bbox(geom.polygon.inner.coords);
-					bbox[0] += innerBBox[0];
-					bbox[1] += innerBBox[1];
-					bbox[2] += innerBBox[2];
-					bbox[3] += innerBBox[3];
+					bbox[0] = std::min(bbox[0], innerBBox[0]);
+					bbox[1] = std::min(bbox[1], innerBBox[1]);
+					bbox[2] = std::max(bbox[2], innerBBox[2]);
+					bbox[3] = std::max(bbox[3], innerBBox[3]);
 				}
 
 				// Update Shape
@@ -372,44 +385,57 @@ namespace surfy::geom {
 						size_t outerSize = polygon.outer.coords.size();
 						polygon.outer.vertices = outerSize;
 
-						if (polygon.outer.vertices != 0){
-							polygon.outer.empty = false;
+						polygon.outer.empty = false;
 
-							polygon.outer.closed = utils::isClosed(polygon.outer.coords);
+						polygon.outer.closed = utils::isClosed(polygon.outer.coords);
 
-							polygon.outer.length = utils::length(polygon.outer.coords, outerSize);
-							polygon.outer.area = utils::area(polygon.outer.coords, outerSize);
+						polygon.outer.length = utils::length(polygon.outer.coords, outerSize);
+						polygon.outer.area = utils::area(polygon.outer.coords, outerSize);
 
-							// Update Polygon
-							polygon.vertices += polygon.outer.vertices;
-							polygon.length += polygon.outer.length;
-							polygon.area += polygon.outer.area;
-						}
+						// Update Polygon
+						polygon.vertices += polygon.outer.vertices;
+						polygon.length += polygon.outer.length;
+						polygon.area += polygon.outer.area;
+
+						BBox outerBBox = utils::bbox(polygon.outer.coords);
+						bbox[0] = std::min(bbox[0], outerBBox[0]);
+						bbox[1] = std::min(bbox[1], outerBBox[1]);
+						bbox[2] = std::max(bbox[2], outerBBox[2]);
+						bbox[3] = std::max(bbox[3], outerBBox[3]);
 					}
 
 					if (!polygon.inner.coords.empty()) {
-						size_t outerSize = polygon.inner.coords.size();
-						polygon.inner.vertices = outerSize;
+						size_t innerSize = polygon.inner.coords.size();
+						polygon.inner.vertices = innerSize;
 
-						if (polygon.inner.vertices != 0){
-							polygon.inner.empty = false;
+						polygon.inner.empty = false;
 
-							polygon.inner.closed = utils::isClosed(polygon.inner.coords);
+						polygon.inner.closed = utils::isClosed(polygon.inner.coords);
 
-							polygon.inner.length = utils::length(polygon.inner.coords, outerSize);
-							polygon.inner.area = utils::area(polygon.inner.coords, outerSize);
+						polygon.inner.length = utils::length(polygon.inner.coords, innerSize);
+						polygon.inner.area = utils::area(polygon.inner.coords, innerSize);
 
-							// Update Polygon
-							polygon.vertices += polygon.inner.vertices;
-							polygon.length += polygon.inner.length;
-							polygon.area += polygon.inner.area;
-						}
+						// Update Polygon
+						polygon.vertices += polygon.inner.vertices;
+						polygon.length += polygon.inner.length;
+						polygon.area += polygon.inner.area;
+						
+						BBox innerBBox = utils::bbox(polygon.inner.coords);
+						bbox[0] = std::min(bbox[0], innerBBox[0]);
+						bbox[1] = std::min(bbox[1], innerBBox[1]);
+						bbox[2] = std::max(bbox[2], innerBBox[2]);
+						bbox[3] = std::max(bbox[3], innerBBox[3]);
 					}
 
 					if (polygon.vertices != 0) {
 						geom.multiPolygon.vertices += polygon.vertices;
 						geom.multiPolygon.length += polygon.length;
 						geom.multiPolygon.area += polygon.area;
+					} else {
+						// Remove Empty Polygon
+						geom.multiPolygon.items.erase(geom.multiPolygon.items.begin() + i);
+						--geom.multiPolygon.size;
+						--i;
 					}
 					
 				}
@@ -420,6 +446,19 @@ namespace surfy::geom {
 				length = geom.multiPolygon.length;
 				area = geom.multiPolygon.area;
 
+				if (optimized && size == 1){
+					typeID = 4;
+					type = "Polygon";
+					types::Polygon onlyPoly = geom.multiPolygon.items[0];
+					new (&geom.polygon) types::Polygon();
+					geom.polygon = onlyPoly;
+
+					geom.polygon.vertices = vertices;
+					geom.polygon.length = length;
+					geom.polygon.area = area;
+					geom.polygon.empty = false;
+				}
+
 				if (vertices != 0) {
 					empty = false;
 				}
@@ -427,8 +466,7 @@ namespace surfy::geom {
 			}
 		}		
 
-		Shape(const std::string& src = "", const bool optimized = false) {
-			source = src; // Store source just in case
+		Shape(const std::string& src = "", const bool optimized = false): optimized(optimized), source(src) {
 
 			if (src.empty()) {
 				// Dummy Geometry
@@ -457,7 +495,7 @@ namespace surfy::geom {
 
 			} else if (src.find("MULTILINESTRING") != std::string::npos) {
 
-				typeID = 2;
+				typeID = 3;
 				type = "MultiLine";
 				new (&geom.multiLine) types::MultiLine();
 
@@ -481,7 +519,7 @@ namespace surfy::geom {
 
 			} else if (src.find("LINESTRING") != std::string::npos) {
 
-				typeID = 3;
+				typeID = 2;
 				type = "Line";
 				new (&geom.line) types::Line();
 
@@ -575,6 +613,8 @@ namespace surfy::geom {
 		}*/
 
 		Shape(const Shape& other) {
+			typeID = other.typeID;
+			optimized = other.optimized;
 			type = other.type;
 			source = other.source;
 			vertices = other.vertices;
@@ -605,10 +645,10 @@ namespace surfy::geom {
 	};
 }
 
-#include "print.h"
-#include "utils.h"
-#include "parser.h"
-#include "clip.h"
-#include "simplify.h"
+#include "print.hpp"
+#include "utils.hpp"
+#include "parser.hpp"
+#include "clip.hpp"
+#include "simplify.hpp"
 
 #endif
