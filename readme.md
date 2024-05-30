@@ -1,10 +1,10 @@
 # Surfy.Geom C++
-Demo test/test.c
+Demo test/test.cpp
 
 ## Installation
 
 ```cpp
-#include "/include/surfy/geom/geom.h"
+#include "/include/surfy/geom/geom.hpp"
 namespace sg = surfy::geom;
 ```
 
